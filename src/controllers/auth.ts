@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import User from "../models/user";
-import CryptoJS from "crypto-js";
 import * as jwt from "jsonwebtoken";
+import { hashPassword, comparePassword } from "../utils/auth";
+import AWS from "aws-sdk";
+import { nanoid } from "nanoid";
 
 export const register = async (req: Request, res: Response) => {
   const newUser = new User({
