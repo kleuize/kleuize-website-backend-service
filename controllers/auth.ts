@@ -68,3 +68,12 @@ export const login = async (req: Request, res: Response) => {
     return res.status(400).send("Error. Try again.");
   }
 };
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    res.clearCookie("token");
+    return res.json({ message: "Signout Success" });
+  } catch (error: any) {
+    console.log(error);
+  }
+};
