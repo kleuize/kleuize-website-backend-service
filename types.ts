@@ -1,4 +1,4 @@
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 
 export interface ILectureModel {
   lectureTitle?: string;
@@ -10,17 +10,18 @@ export interface ILectureModel {
   tag?: string;
   instructor?: string;
 }
-export interface IUserModel extends Document {
+export interface IUserModel {
+  _id: Types.ObjectId;
   name?: string;
   email?: string;
   password?: string;
   role?: string[];
-  picture: string;
+  picture?: string;
   courses?: any;
-  stripe_account_id: string;
-  stripe_seller: {};
-  stripeSession: {};
-  passwordResetCode: string;
+  stripe_account_id?: string;
+  stripe_seller?: {};
+  stripeSession?: {};
+  passwordResetCode?: string;
 }
 interface ILecture {
   lectureId: string;

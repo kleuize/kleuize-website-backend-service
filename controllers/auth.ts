@@ -4,6 +4,7 @@ import * as jwt from "jsonwebtoken";
 import { hashPassword, comparePassword } from "../utils/auth";
 import AWS from "aws-sdk";
 import { nanoid } from "nanoid";
+import { IUserModel } from "../types";
 
 export const register = async (req: Request, res: Response) => {
   //now we use the functions of the model to has the password then we'll save and divert back to register route
@@ -75,5 +76,18 @@ export const logout = async (req: Request, res: Response) => {
     return res.json({ message: "Signout Success" });
   } catch (error: any) {
     console.log(error);
+  }
+};
+
+export const currentUser = async (req: Request, res: Response) => {
+  try {
+    //@ts-ignore
+    const user = await User.findById(req.user._id)
+      .select("-password")
+      .exec();
+    console.log("CURRENT_USER", user);
+    return res.json(user);
+  } catch (err) {
+    console.log(err);
   }
 };
