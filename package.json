@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:nodemon": "./node_modules/nodemon/bin/nodemon.js",
-    "start": "ts-node ./src/index.ts",
+    "start": "nodemon -r esm app.ts",
     "dev": "ts-node-dev --rs --poll src/index.ts",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,10 +14,14 @@
   "license": "ISC",
   "dependencies": {
     "@typegoose/typegoose": "^9.11.2",
+    "@types/cookie-parser": "^1.4.3",
+    "@types/csurf": "^1.11.2",
     "@types/jsonwebtoken": "^8.5.9",
     "aws-sdk": "^2.1214.0",
     "bcrypt": "^5.0.1",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "csurf": "^1.11.0",
     "dotenv": "^16.0.0",
     "esm": "^3.2.25",
     "express": "^4.17.3",
