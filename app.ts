@@ -1,10 +1,13 @@
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
+import csrf from "csurf";
 import { readdirSync } from "fs";
 const morgan = require("morgan");
 require("dotenv").config();
 
+//@ts-ignore
+const csrfProtection = csrf({ cookie: true });
 // create express app
 const app = express();
 
@@ -22,6 +25,13 @@ app.use(morgan("dev"));
 
 // route
 readdirSync("./routes").map((r) => app.use("/api", require(`./routes/${r}`)));
+//csfr
+
+app.use(csrfProtection);
+
+app.get("/api/csrf-token", (req: any, res: any) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
 
 // port
 const port = process.env.PORT || 5000;
