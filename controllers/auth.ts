@@ -82,11 +82,9 @@ export const logout = async (req: Request, res: Response) => {
 export const currentUser = async (req: Request, res: Response) => {
   try {
     //@ts-ignore
-    const user = await User.findById(req.user._id)
-      .select("-password")
-      .exec();
+    const user = await User.findById(req.user._id).select("-password").exec();
     console.log("CURRENT_USER", user);
-    return res.json(user);
+    return res.json({ ok: true });
   } catch (err) {
     console.log(err);
   }
