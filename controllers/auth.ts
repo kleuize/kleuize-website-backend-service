@@ -3,8 +3,25 @@ import User from "../models/user";
 import * as jwt from "jsonwebtoken";
 import { hashPassword, comparePassword } from "../utils/auth";
 import AWS from "aws-sdk";
-import { nanoid } from "nanoid";
-import { IUserModel } from "../types";
+
+const awsConfig = {
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+  apiVersion: process.env.AWS_API_VERSION,
+};
+
+const SES = new AWS.SES(awsConfig);
+
+function generateUID() {
+  // I generate the UID from two parts here
+  // to ensure the random number provide enough bits.
+  var firstPart: any = (Math.random() * 46656) | 0;
+  var secondPart: any = (Math.random() * 46656) | 0;
+  firstPart = ("000" + firstPart.toString(36)).slice(-3);
+  secondPart = ("000" + secondPart.toString(36)).slice(-3);
+  return firstPart + secondPart;
+}
 
 export const register = async (req: Request, res: Response) => {
   //now we use the functions of the model to has the password then we'll save and divert back to register route
@@ -87,5 +104,78 @@ export const currentUser = async (req: Request, res: Response) => {
     return res.json({ ok: true });
   } catch (err) {
     console.log(err);
+  }
+};
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    const shortCode = generateUID().toUpperCase();
+    const user = await User.findOneAndUpdate(
+      { email },
+      { passwordResetCode: shortCode }
+    );
+    if (!user) return res.status(400).send("User not found");
+
+    const params: any = {
+      Source: process.env.EMAIL_FROM,
+      Destination: {
+        ToAddresses: [email],
+      },
+      Message: {
+        Body: {
+          Html: {
+            Charset: "UTF-8",
+            Data: `
+                <html>
+                  <h1>Reset password</h1>
+                  <p>User this code to reset your password</p>
+                  <h2 style="color:red;">${shortCode}</h2>
+                  <i>edemy.com</i>
+                </html>
+              `,
+          },
+        },
+        Subject: {
+          Charset: "UTF-8",
+          Data: "Reset Password",
+        },
+      },
+    };
+
+    const emailSent = SES.sendEmail(params).promise();
+    emailSent
+      .then((data) => {
+        console.log(data);
+        res.json({ ok: true });
+      })
+      .catch((err: any) => {
+        console.log(err);
+      });
+  } catch (err: any) {
+    console.log(err);
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { email, code, newPassword } = req.body;
+
+    const hashedPassword = await hashPassword(newPassword);
+
+    const user = User.findOneAndUpdate(
+      {
+        email,
+        passwordResetCode: code,
+      },
+      {
+        password: hashedPassword,
+        passwordResetCode: "",
+      }
+    ).exec();
+    res.json({ ok: true });
+  } catch (err: any) {
+    console.log(err);
+    return res.status(400).send("Error! Try again.");
   }
 };
