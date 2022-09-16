@@ -6,6 +6,15 @@ import AWS from "aws-sdk";
 import { nanoid } from "nanoid";
 import { IUserModel } from "../types";
 
+const awsConfig = {
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+  apiVersion: process.env.AWS_API_VERSION,
+};
+
+const SES = new AWS.SES(awsConfig);
+
 export const register = async (req: Request, res: Response) => {
   //now we use the functions of the model to has the password then we'll save and divert back to register route
   try {
@@ -88,4 +97,40 @@ export const currentUser = async (req: Request, res: Response) => {
   } catch (err) {
     console.log(err);
   }
+};
+
+export const sendTestEmail = async (req: Request, res: Response) => {
+  const params: any = {
+    Source: process.env.EMAIL_FROM,
+    Destination: { ToAddresses: ["kleuize.app@gmail.com"] },
+    Message: {
+      Body: {
+        Html: {
+          Charset: "UTF-8",
+          Data: `
+                <html>
+                  <h1>Reset password</h1>
+                  <p>User this code to reset your password</p>
+                  <h2 style="color:red;">Test Code</h2>
+                  <i>edemy.com</i>
+                </html>
+              `,
+        },
+      },
+      Subject: {
+        Charset: "UTF-8",
+        Data: "Reset Password",
+      },
+    },
+  };
+  const emailSent = SES.sendEmail(params).promise();
+
+  emailSent
+    .then((data) => {
+      console.log(data);
+      res.json({ ok: true });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
 };
