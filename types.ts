@@ -11,7 +11,6 @@ export interface ILectureModel {
   instructor?: string;
 }
 export interface IUserModel {
-  _id: Types.ObjectId;
   name?: string;
   email?: string;
   password?: string;
