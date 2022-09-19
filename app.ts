@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import mongoose from "mongoose";
+import mongoose, { ConnectOptions } from "mongoose";
 import csrf from "csurf";
 import cookieParser from "cookie-parser";
 import { readdirSync } from "fs";
@@ -15,7 +15,10 @@ const app = express();
 // db
 mongoose
   //@ts-ignore
-  .connect(process.env.DATABASE)
+  .connect(process.env.DATABASE, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  } as ConnectOptions)
   .then(() => console.log("**DB CONNECTED**"))
   .catch((err) => console.log("DB CONNECTION ERR => ", err));
 

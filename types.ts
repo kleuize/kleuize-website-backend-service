@@ -1,17 +1,5 @@
-import { Document, Types } from "mongoose";
-
-export interface ILectureModel {
-  lectureTitle?: string;
-  lectureContent?: string;
-  lecturePrice?: number;
-  lectureOldPrice?: number;
-  image?: string;
-  rating?: number;
-  tag?: string;
-  instructor?: string;
-}
+import { Types } from "mongoose";
 export interface IUserModel {
-  _id: Types.ObjectId;
   name?: string;
   email?: string;
   password?: string;
@@ -23,14 +11,25 @@ export interface IUserModel {
   stripeSession?: {};
   passwordResetCode?: string;
 }
-interface ILecture {
-  lectureId: string;
-  quantity: number;
+export interface ILessonModel {
+  title: string;
+  slug?: string;
+  content?: {};
+  lecture_quiz?: {};
+  lecture_video?: {};
+  lecture_notes?: {};
+  free_preview?: boolean;
 }
-export interface IOrderModel {
-  userId: string;
-  lectures: ILecture;
-  amount: number;
-  address: Object;
-  status: string;
+
+export interface ICourseModel {
+  name: string;
+  slug?: string;
+  description: {};
+  category: string;
+  price: number;
+  image: {};
+  published?: boolean;
+  paid: boolean;
+  instructor: Types.ObjectId;
+  lessons: ILessonModel;
 }
