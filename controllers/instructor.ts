@@ -3,21 +3,33 @@ import User from "../models/user";
 import Course from "../models/course";
 import queryString from "query-string";
 import stripe from "stripe";
+import { IUserModel } from "../types";
 
 const config: any = {};
-
 const stripes = new stripe.Stripe(process.env.STRIPE_SECRET, config);
+
+let user: any = {};
 export const makeInstructor = async (req: Request, res: Response) => {
   try {
     // 1. find user from db
-    const user = await User.findById(req.body.user._id).exec();
+    console.log("req", req)
+      user = await User.findById(req.body._id)
+      .exec()
+      .then(async (resUser) => {
+
+        console.log("res", resUser);
+        if (!resUser?.stripe_account_id) {
+          const account = await stripes.accounts
+            .create({ type: "express" })
+            .then((resAccount) => {
+              console.log("ACCOUNT => ", resAccount.id);
+              resUser.stripe_account_id = resAccount.id;
+              resUser.save();
+            });
+        }
+      });
     // 2. if user dont have stripe_account_id yet, then create new
-    if (!user.stripe_account_id) {
-      const account = await stripes.accounts.create({ type: "express" });
-      console.log("ACCOUNT => ", account.id);
-      user.stripe_account_id = account.id;
-      user.save();
-    }
+
     let accountLink = await stripes.accountLinks.create({
       account: user.stripe_account_id,
       refresh_url: process.env.STRIPE_REDIRECT_URL,
@@ -40,7 +52,7 @@ export const makeInstructor = async (req: Request, res: Response) => {
 
 export const getAccountStatus = async (req: Request, res: Response) => {
   try {
-    const user = await User.findById(req.body.user._id).exec();
+    const user = await User.findById(req.body._id).exec();
     const account = await stripes.accounts.retrieve(user.stripe_account_id);
     // console.log("ACCOUNT => ", account);
     if (!account.charges_enabled) {
@@ -65,9 +77,7 @@ export const getAccountStatus = async (req: Request, res: Response) => {
 
 export const currentInstructor = async (req: Request, res: Response) => {
   try {
-    let user = await User.findById(req.body.user._id)
-      .select("-password")
-      .exec();
+    let user = await User.findById(req.body._id).select("-password").exec();
     // console.log("CURRENT INSTRUCTOR => ", user);
     if (!user.role.includes("Instructor")) {
       return res.sendStatus(403);
@@ -79,9 +89,9 @@ export const currentInstructor = async (req: Request, res: Response) => {
   }
 };
 
-export const instructorCourses = async (req:Request, res: Response) => {
+export const instructorCourses = async (req: Request, res: Response) => {
   try {
-    const courses = await Course.find({ instructor: req.body.user._id })
+    const courses = await Course.find({ instructor: req.body._id })
       .sort({ createdAt: -1 })
       .exec();
     res.json(courses);
