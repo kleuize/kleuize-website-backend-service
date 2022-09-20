@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import AWS from "aws-sdk";
-import { nanoid } from "nanoid";
 import Course from "../models/course";
 import slugify from "slugify";
+import { nanoid } from "nanoid";
 
 const awsConfig = {
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -30,7 +30,7 @@ export const uploadImage = async (req: Request, res: Response) => {
 
     // image params
     const params = {
-      Bucket: "edemy-bucket",
+      Bucket: "kleuize-bucket",
       Key: `${nanoid()}.${type}`,
       Body: base64Data,
       ACL: "public-read",
