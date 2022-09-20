@@ -8,12 +8,12 @@ import { IUserModel } from "../types";
 const config: any = {};
 const stripes = new stripe.Stripe(process.env.STRIPE_SECRET, config);
 
-let user: any = {};
+
 export const makeInstructor = async (req: any, res: Response) => {
   try {
     // 1. find user from db
-    user = await User.findById(req.auth._id).exec();
-    console.log("user", user)
+    const user = await User.findById(req.auth._id).exec();
+    console.log("user", user);
     if (!user.stripe_account_id) {
       const account = await stripes.accounts.create({ type: "standard" });
       // console.log('ACCOUNT => ', account.id)
@@ -43,7 +43,6 @@ export const makeInstructor = async (req: any, res: Response) => {
 
 export const getAccountStatus = async (req: any, res: Response) => {
   try {
-
     const user = await User.findById(req.auth._id).exec();
     const account = await stripes.accounts.retrieve(user.stripe_account_id);
     // console.log("ACCOUNT => ", account);
@@ -69,7 +68,6 @@ export const getAccountStatus = async (req: any, res: Response) => {
 
 export const currentInstructor = async (req: any, res: Response) => {
   try {
-
     let user = await User.findById(req.auth._id).select("-password").exec();
     console.log("CURRENT INSTRUCTOR => ", user);
     if (!user.role.includes("Instructor")) {
