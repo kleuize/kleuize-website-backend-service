@@ -1,6 +1,7 @@
 import { expressjwt } from "express-jwt";
 import { Request, Response } from "express";
 import User from "../models/user";
+import Course from "../models/course";
 
 export const requireSignin = expressjwt({
   //@ts-ignore
@@ -22,3 +23,24 @@ export const isInstructor = async (req: any, res: Response, next: any) => {
     console.log(err);
   }
 };
+
+// export const isEnrolled = async (req: any, res: Response, next: any) => {
+//   try {
+//     const user = await User.findById(req.auth._id).exec();
+//     const course = await Course.findOne({ slug: req.params.slug }).exec();
+
+//     // check if course id is found in user courses array
+//     let ids = [];
+//     for (let i = 0; i < user.courses.length; i++) {
+//       ids.push(user.courses[i].toString());
+//     }
+
+//     if (!ids.includes(course._id.toString())) {
+//       res.sendStatus(403);
+//     } else {
+//       next();
+//     }
+//   } catch (err) {
+//     console.log(err);
+//   }
+// };
