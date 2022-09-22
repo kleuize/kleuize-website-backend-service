@@ -1,5 +1,5 @@
 import { expressjwt } from "express-jwt";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import User from "../models/user";
 import Course from "../models/course";
 
@@ -23,6 +23,15 @@ export const isInstructor = async (req: any, res: Response, next: any) => {
     console.log(err);
   }
 };
+
+interface AsyncMiddleware {
+  (req: Request, res: Response, next: NextFunction): Promise<unknown>;
+}
+
+export const asyncHandler =
+  (fn: AsyncMiddleware): AsyncMiddleware =>
+  (req, res, next) =>
+    Promise.resolve(fn(req, res, next)).catch(next);
 
 // export const isEnrolled = async (req: any, res: Response, next: any) => {
 //   try {
