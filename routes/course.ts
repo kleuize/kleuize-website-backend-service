@@ -12,8 +12,8 @@ import {
   removeImage,
   create,
   read,
-  uploadVideo,
-  removeVideo,
+  uploadQuiz,
+  removeQuiz,
   addLesson,
   update,
   removeLesson,
@@ -37,9 +37,9 @@ router.post(
   "/course/video-upload/:instructorId",
   requireSignin,
   formidable(),
-  uploadVideo
+  uploadQuiz
 );
-router.post("/course/video-remove/:instructorId", requireSignin, removeVideo);
+router.post("/course/video-remove/:instructorId", requireSignin, removeQuiz);
 
 // publish unpublish
 router.put("/course/publish/:courseId", requireSignin, publishCourse);

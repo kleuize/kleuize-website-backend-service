@@ -15,8 +15,7 @@ export interface ILessonModel {
   title: string;
   slug?: string;
   content?: {};
-  lecture_quiz?: {};
-  lecture_video?: {};
+  quiz?: {};
   lecture_notes?: {};
   free_preview?: boolean;
 }

@@ -8,7 +8,6 @@ import { IUserModel } from "../types";
 const config: any = {};
 const stripes = new stripe.Stripe(process.env.STRIPE_SECRET, config);
 
-
 export const makeInstructor = async (req: any, res: Response) => {
   try {
     // 1. find user from db
@@ -86,6 +85,17 @@ export const instructorCourses = async (req: any, res: Response) => {
       .sort({ createdAt: -1 })
       .exec();
     res.json(courses);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const studentCount = async (req: any, res: Response) => {
+  try {
+    const users = await User.find({ courses: req.auth.courseId })
+      .select("_id")
+      .exec();
+    res.json(users);
   } catch (err) {
     console.log(err);
   }

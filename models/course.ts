@@ -18,9 +18,8 @@ const lessonSchema = new Schema<ILessonModel>(
       type: {},
       minlength: 200,
     },
-    lecture_quiz: {},
+    quiz: {type: Schema.Types.ObjectId, ref: "Quiz"},
     lecture_notes: {},
-    lecture_video: {},
     free_preview: {
       type: Boolean,
       default: false,
