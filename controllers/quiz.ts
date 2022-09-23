@@ -43,6 +43,28 @@ export const getQuizByCode = async (
   return res.json(quiz);
 };
 
+export const createQuizzes = async (req: any, res: Response) => {
+    // console.log("CREATE COURSE", req.body);
+    // return;
+    try {
+      const alreadyExist = await Quiz.findOne({
+        slug: slugify(req.body.name.toLowerCase()),
+      });
+      if (alreadyExist) return res.status(400).send("Title is taken");
+  
+      const quiz = await new Quiz({
+        slug: slugify(req.body.name),
+        instructor: req.auth._id,
+        ...req.body,
+      }).save();
+  
+      res.json(quiz);
+    } catch (err) {
+      console.log(err);
+      return res.status(400).send("Quiz create failed. Try again.");
+    }
+  };
+
 export const createQuiz = asyncHandler(async (req: Request, res: Response) => {
   // Validation
   const errors = validationResult(req);
@@ -66,7 +88,7 @@ export const createQuiz = asyncHandler(async (req: Request, res: Response) => {
       const answer = answers[j];
 
       // If the selected answer id is included in the selectedAnswers array, we make it correct
-      if (selectedAnswers.includes(answer.id)) {
+      if (selectedAnswers.includes(answer._id)) {
         noSelectedAnswer = true;
         answers[j].isCorrect = true;
       }
@@ -145,3 +167,7 @@ export const getQuizResult = asyncHandler(
     return res.json(score);
   }
 );
+function slugify(name: any) {
+    throw new Error("Function not implemented.");
+}
+
