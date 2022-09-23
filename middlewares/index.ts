@@ -3,6 +3,10 @@ import { Request, Response, NextFunction } from "express";
 import User from "../models/user";
 import Course from "../models/course";
 
+interface AsyncMiddleware {
+  (req: Request, res: Response, next: NextFunction): Promise<unknown>;
+}
+
 export const requireSignin = expressjwt({
   //@ts-ignore
   getToken: (req, res) => req.cookies.token,
@@ -10,10 +14,14 @@ export const requireSignin = expressjwt({
   algorithms: ["HS256"],
 });
 
-export const isInstructor = async (req: any, res: Response, next: any) => {
+export const isInstructor = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<unknown> => {
   try {
-    const user = await User.findById(req.auth._id).exec();
     //@ts-ignore
+    const user = await User.findById(req.auth._id).exec();
     if (!user.role.includes("Instructor")) {
       return res.sendStatus(403);
     } else {
@@ -24,15 +32,10 @@ export const isInstructor = async (req: any, res: Response, next: any) => {
   }
 };
 
-interface AsyncMiddleware {
-  (req: Request, res: Response, next: NextFunction): Promise<unknown>;
-}
-
 export const asyncHandler =
   (fn: AsyncMiddleware): AsyncMiddleware =>
   (req, res, next) =>
     Promise.resolve(fn(req, res, next)).catch(next);
-
 // export const isEnrolled = async (req: any, res: Response, next: any) => {
 //   try {
 //     const user = await User.findById(req.auth._id).exec();
