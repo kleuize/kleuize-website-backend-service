@@ -6,6 +6,7 @@ import { nanoid } from "nanoid";
 import { readFileSync } from "fs";
 import User from "../models/user";
 import stripe from "stripe";
+import { validationResult } from "express-validator";
 
 const config: any = {};
 const stripes = new stripe.Stripe(process.env.STRIPE_SECRET, config);
@@ -113,74 +114,10 @@ export const read = async (req: Request, res: Response) => {
   }
 };
 
-export const uploadQuiz = async (req: any, res: Response) => {
-  try {
-    // console.log("req.user._id", req.user._id);
-    // console.log("req.params.instructorId", req.params.instructorId);
-    if (req.auth._id != req.params.instructorId) {
-      return res.status(400).send("Unauthorized");
-    }
-
-    const { quiz } = req.files;
-    // console.log(quiz);
-    if (!quiz) return res.status(400).send("No Quiz");
-
-    // quiz params
-    const params = {
-      Bucket: "edemy-bucket",
-      Key: `${nanoid()}.${quiz.type.split("/")[1]}`,
-      Body: readFileSync(quiz.path),
-      ACL: "public-read",
-      ContentType: quiz.type,
-    };
-
-    // upload to s3
-    S3.upload(params, (err: any, data: any) => {
-      if (err) {
-        console.log(err);
-        res.sendStatus(400);
-      }
-      console.log(data);
-      res.send(data);
-    });
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-export const removeQuiz = async (req: any, res: Response) => {
-  try {
-    if (req.auth._id != req.params.instructorId) {
-      return res.status(400).send("Unauthorized");
-    }
-
-    const { Bucket, Key } = req.body;
-    // console.log("Quiz REMOVE =====> ", req.body);
-
-    // quiz params
-    const params = {
-      Bucket,
-      Key,
-    };
-
-    // upload to s3
-    S3.deleteObject(params, (err, data) => {
-      if (err) {
-        console.log(err);
-        res.sendStatus(400);
-      }
-      console.log(data);
-      res.send({ ok: true });
-    });
-  } catch (err) {
-    console.log(err);
-  }
-};
-
 export const addLesson = async (req: any, res: Response) => {
   try {
     const { slug, instructorId } = req.params;
-    const { title, content, quiz } = req.body;
+    const { lessonTitle } = req.body;
 
     if (req.auth._id != instructorId) {
       return res.status(400).send("Unauthorized");
@@ -189,7 +126,12 @@ export const addLesson = async (req: any, res: Response) => {
     const updated = await Course.findOneAndUpdate(
       { slug },
       {
-        $push: { lessons: { title, content, quiz, slug: slugify(title) } },
+        $push: {
+          lessons: {
+            lessonTitle,
+            slug: slugify(lessonTitle),
+          },
+        },
       },
       { new: true }
     )
@@ -201,6 +143,65 @@ export const addLesson = async (req: any, res: Response) => {
     return res.status(400).send("Add lesson failed");
   }
 };
+
+export const createQuiz = async (req: any, res: Response) => {
+  try {
+    const { slug, instructorId } = req.params;
+    const { quizTitle, questions, selectedAnswers } = req.body;
+    if (req.auth._id != instructorId) {
+      return res.status(400).send("Unauthorized");
+    }
+
+    for (let i = 0; i < questions.length; i++) {
+      const question = questions[i];
+  
+      // Looping through quesion's answers
+      let { answers } = question;
+  
+      // If none of the answers was selected as the correct answer, we select the first one as the correct one
+      let noSelectedAnswer = false;
+  
+      for (let j = 0; j < answers.length; j++) {
+        const answer = answers[j];
+  
+        // If the selected answer id is included in the selectedAnswers array, we make it correct
+        if (selectedAnswers.includes(answer.id)) {
+          noSelectedAnswer = true;
+          answers[j].isCorrect = true;
+        }
+      }
+  
+      if (!noSelectedAnswer) {
+        answers[0].isCorrect = true;
+      }
+
+    }
+    
+    const updated = await Course.findOneAndUpdate(
+      { slug },
+      {
+        $push: {
+          lessons: {
+            quiz: {
+              quizTitle,
+              questions,
+              slug: slugify(quizTitle),
+            },
+          },
+        },
+      },
+      { new: true }
+    )
+      .populate("instructor", "_id name")
+      .exec();
+    res.json(updated);
+  } catch (err) {
+    console.log(err);
+    return res.status(400).send("Add lesson failed");
+  }
+};
+
+// Looping through quesions
 
 export const update = async (req: any, res: Response) => {
   try {
@@ -435,3 +436,11 @@ export const userCourses = async (req: any, res: Response) => {
     .exec();
   res.json(courses);
 };
+function asyncHandler(
+  arg0: (
+    req: Request,
+    res: Response
+  ) => Promise<Response<any, Record<string, any>>>
+) {
+  throw new Error("Function not implemented.");
+}

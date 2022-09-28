@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import { Types, Document } from "mongoose";
 export interface IUserModel {
   name?: string;
   email?: string;
@@ -12,11 +12,9 @@ export interface IUserModel {
   passwordResetCode?: string;
 }
 export interface ILessonModel {
-  title: string;
+  lessonTitle: string;
   slug?: string;
-  content?: {};
   quiz?: {};
-  lecture_notes?: {};
   free_preview?: boolean;
 }
 
@@ -32,3 +30,18 @@ export interface ICourseModel {
   instructor: Types.ObjectId;
   lessons: ILessonModel;
 }
+
+export type AnswerDocument = Document & {
+  text: string;
+  isCorrect: boolean;
+};
+
+export type QuestionDocument = Document & {
+  content: string;
+  answers: AnswerDocument["_id"];
+};
+
+export type QuizDocument = Document & {
+  quizTitle: string;
+  questions: QuestionDocument["_id"];
+};

@@ -12,8 +12,6 @@ import {
   removeImage,
   create,
   read,
-  uploadQuiz,
-  removeQuiz,
   addLesson,
   update,
   removeLesson,
@@ -24,6 +22,7 @@ import {
   checkEnrollment,
   freeEnrollment,
   userCourses,
+  createQuiz,
 } from "../controllers/course";
 
 // image
@@ -33,13 +32,14 @@ router.post("/course/remove-image", removeImage);
 router.post("/course", requireSignin, isInstructor, create);
 router.put("/course/:slug", requireSignin, update);
 router.get("/course/:slug", read);
-router.post(
-  "/course/video-upload/:instructorId",
-  requireSignin,
-  formidable(),
-  uploadQuiz
-);
-router.post("/course/video-remove/:instructorId", requireSignin, removeQuiz);
+
+// router.post(
+//   "/course/quiz-upload/:instructorId",
+//   requireSignin,
+//   formidable(),
+//   createQuiz
+// );
+// router.post("/course/video-remove/:instructorId", requireSignin, removeQuiz);
 
 // publish unpublish
 router.put("/course/publish/:courseId", requireSignin, publishCourse);
@@ -50,6 +50,7 @@ router.post("/course/lesson/:slug/:instructorId", requireSignin, addLesson);
 router.put("/course/lesson/:slug/:instructorId", requireSignin, updateLesson);
 router.put("/course/:slug/:lessonId", requireSignin, removeLesson);
 
+router.post("/course/lesson/:slug/:instructorId/create-quiz", requireSignin, createQuiz);
 router.get("/check-enrollment/:courseId", requireSignin, checkEnrollment);
 
 // enrollment
