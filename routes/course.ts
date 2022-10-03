@@ -23,6 +23,7 @@ import {
   freeEnrollment,
   userCourses,
   createQuiz,
+  getQuiz,
 } from "../controllers/course";
 
 // image
@@ -32,7 +33,8 @@ router.post("/course/remove-image", removeImage);
 router.post("/course", requireSignin, isInstructor, create);
 router.put("/course/:slug", requireSignin, update);
 router.get("/course/:slug", read);
-
+// quiz
+router.get("./course/lessons", getQuiz);
 // router.post(
 //   "/course/quiz-upload/:instructorId",
 //   requireSignin,
@@ -46,11 +48,14 @@ router.put("/course/publish/:courseId", requireSignin, publishCourse);
 router.put("/course/unpublish/:courseId", requireSignin, unpublishCourse);
 
 // `/api/course/lesson/${slug}/${course.instructor._id}`,
-router.post("/course/lesson/:slug/:instructorId", requireSignin, addLesson);
+router.post("/course/lesson/:slug/:instructorId/", requireSignin, addLesson);
 router.put("/course/lesson/:slug/:instructorId", requireSignin, updateLesson);
 router.put("/course/:slug/:lessonId", requireSignin, removeLesson);
-
-router.post("/course/lesson/:slug/:instructorId/create-quiz", requireSignin, createQuiz);
+router.post(
+  "/course/lesson/:slug/:instructorId/:lessonId/add-quiz",
+  requireSignin,
+  createQuiz
+);
 router.get("/check-enrollment/:courseId", requireSignin, checkEnrollment);
 
 // enrollment

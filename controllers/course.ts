@@ -114,6 +114,19 @@ export const read = async (req: Request, res: Response) => {
   }
 };
 
+export const getQuiz = async (req: Request, res: Response) => {
+  try {
+    console.log("data", req.params);
+    const lesson = await Course.findOne({ lessons: req.params.lessons })
+      .populate("lessons")
+      .exec();
+    res.json(lesson);
+    console.log(lesson);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 export const addLesson = async (req: any, res: Response) => {
   try {
     const { slug, instructorId } = req.params;
@@ -146,7 +159,7 @@ export const addLesson = async (req: any, res: Response) => {
 
 export const createQuiz = async (req: any, res: Response) => {
   try {
-    const { slug, instructorId } = req.params;
+    const { slug, instructorId, lessonId } = req.params;
     const { quizTitle, questions, selectedAnswers } = req.body;
     if (req.auth._id != instructorId) {
       return res.status(400).send("Unauthorized");
@@ -154,54 +167,53 @@ export const createQuiz = async (req: any, res: Response) => {
 
     for (let i = 0; i < questions.length; i++) {
       const question = questions[i];
-  
+
       // Looping through quesion's answers
       let { answers } = question;
-  
+
       // If none of the answers was selected as the correct answer, we select the first one as the correct one
       let noSelectedAnswer = false;
-  
+
       for (let j = 0; j < answers.length; j++) {
         const answer = answers[j];
-  
+
         // If the selected answer id is included in the selectedAnswers array, we make it correct
         if (selectedAnswers.includes(answer.id)) {
           noSelectedAnswer = true;
           answers[j].isCorrect = true;
         }
       }
-  
+
       if (!noSelectedAnswer) {
         answers[0].isCorrect = true;
       }
-
     }
-    
+
     const updated = await Course.findOneAndUpdate(
       { slug },
       {
         $push: {
-          lessons: {
-            quiz: {
-              quizTitle,
-              questions,
-              slug: slugify(quizTitle),
-            },
+          "lessons.$[lessons].quiz": {
+            quizTitle,
+            questions,
+            slug: slugify(quizTitle),
           },
         },
       },
-      { new: true }
+      { arrayFilters: [
+        {
+          "lessons._id": lessonId
+        }
+      ] }
     )
-      .populate("instructor", "_id name")
       .exec();
     res.json(updated);
   } catch (err) {
     console.log(err);
-    return res.status(400).send("Add lesson failed");
+    return res.status(400).send("Add quiz failed");
   }
 };
 
-// Looping through quesions
 
 export const update = async (req: any, res: Response) => {
   try {
