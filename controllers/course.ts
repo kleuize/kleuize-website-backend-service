@@ -200,13 +200,14 @@ export const createQuiz = async (req: any, res: Response) => {
           },
         },
       },
-      { arrayFilters: [
-        {
-          "lessons._id": lessonId
-        }
-      ] }
-    )
-      .exec();
+      {
+        arrayFilters: [
+          {
+            "lessons._id": lessonId,
+          },
+        ],
+      }
+    ).exec();
     res.json(updated);
   } catch (err) {
     console.log(err);
@@ -214,14 +215,13 @@ export const createQuiz = async (req: any, res: Response) => {
   }
 };
 
-
 export const update = async (req: any, res: Response) => {
   try {
     const { slug } = req.params;
-    // console.log(slug);
+    console.log(slug);
     const course = await Course.findOne({ slug }).exec();
     // console.log("COURSE FOUND => ", course);
-    if (req.auth._id != course.instructor) {
+    if (req.auth._id != course.instructor._id) {
       return res.status(400).send("Unauthorized");
     }
 
