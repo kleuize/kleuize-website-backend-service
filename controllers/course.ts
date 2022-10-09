@@ -117,11 +117,15 @@ export const read = async (req: Request, res: Response) => {
 export const getQuiz = async (req: Request, res: Response) => {
   try {
     console.log("data", req.params);
-    const lesson = await Course.findOne({ lessons: req.params.lessons })
-      .populate("lessons")
+    const {quizId} = req.params;
+
+    const singleQuiz = await Course.find({
+      lessons: { "quiz._id": quizId },
+    })
+      .select("_id")
       .exec();
-    res.json(lesson);
-    console.log(lesson);
+    res.json(singleQuiz);
+    console.log(singleQuiz);
   } catch (err) {
     console.log(err);
   }
@@ -252,28 +256,26 @@ export const removeLesson = async (req: any, res: Response) => {
 
 export const updateLesson = async (req: any, res: Response) => {
   try {
-    // console.log("UPDATE LESSON", req.body);
+    console.log("UPDATE LESSON", req.body);
     const { slug } = req.params;
-    const { _id, title, content, quiz, free_preview } = req.body;
+    const { lessonId, lessonTitle } = req.body;
     const course = await Course.findOne({ slug }).select("instructor").exec();
 
     if (course.instructor._id != req.auth._id) {
       return res.status(400).send("Unauthorized");
     }
 
-    const updated = await Course.updateOne(
-      { "lessons._id": _id },
+    const updated = await Course.findOneAndUpdate(
+      { "lessons._id": lessonId },
       {
         $set: {
-          "lessons.$.title": title,
-          "lessons.$.content": content,
-          "lessons.$.quiz": quiz,
-          "lessons.$.free_preview": free_preview,
+          "lessons.$.lessonTitle": lessonTitle,
+          "lessons.$.slug": slugify(lessonTitle),
         },
       },
       { new: true }
     ).exec();
-    // console.log("updated", updated);
+    console.log("updated", updated);
     res.json({ ok: true });
   } catch (err) {
     console.log(err);

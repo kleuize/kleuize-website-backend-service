@@ -34,7 +34,7 @@ router.post("/course", requireSignin, isInstructor, create);
 router.put("/course/:slug", requireSignin, update);
 router.get("/course/:slug", read);
 // quiz
-router.get("./course/lessons", getQuiz);
+router.get("./course/lessons/quiz/:quizId", getQuiz);
 // router.post(
 //   "/course/quiz-upload/:instructorId",
 //   requireSignin,
@@ -51,11 +51,13 @@ router.put("/course/unpublish/:courseId", requireSignin, unpublishCourse);
 router.post("/course/lesson/:slug/:instructorId/", requireSignin, addLesson);
 router.put("/course/lesson/:slug/:instructorId", requireSignin, updateLesson);
 router.put("/course/:slug/:lessonId", requireSignin, removeLesson);
+//Question
 router.post(
   "/course/lesson/:slug/:instructorId/:lessonId/add-quiz",
   requireSignin,
   createQuiz
 );
+router.get("/course/lesson/:slug/:quizId", getQuiz)
 router.get("/check-enrollment/:courseId", requireSignin, checkEnrollment);
 
 // enrollment
