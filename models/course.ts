@@ -1,9 +1,75 @@
-import { Schema, model, Types } from "mongoose";
-import { ILessonModel, ICourseModel } from "../types";
+import { Schema, model } from "mongoose";
+import {
+  ILessonModel,
+  ICourseModel,
+  AnswerDocument,
+  QuestionDocument,
+  QuizDocument,
+} from "../types";
 
-const lessonSchema = new Schema<ILessonModel>(
+const answerSchema: Schema = new Schema<AnswerDocument>(
   {
-    title: {
+    text: {
+      type: String,
+      required: [true, "Please add a text!"],
+      trim: true,
+      maxlength: [50, "Text can not be more than 50 characters"],
+    },
+    isCorrect: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { timestamps: true }
+);
+
+const questionSchema = new Schema<QuestionDocument>(
+  {
+    content: {
+      type: String,
+      trim: true,
+      minlength: 3,
+      maxlength: 320,
+      required: true,
+    },
+    answers: {
+      type: [answerSchema],
+      validate: {
+        validator: (value: Array<AnswerDocument>) => {
+          return value && value.length === 4;
+        },
+        message: "Answers length should be 4!",
+      },
+    },
+  },
+  { timestamps: true }
+);
+
+const quizSchema: Schema = new Schema<QuizDocument>(
+  {
+    quizTitle: {
+      type: String,
+      trim: true,
+      minlength: 3,
+      maxlength: 320,
+      required: true,
+    },
+    questions: {
+      type: [questionSchema],
+      validate: {
+        validator: (value: Array<QuestionDocument>) => {
+          return value && value.length >= 1 && value.length <= 10;
+        },
+        message: "Questions length should be between 1 and 10!",
+      },
+    },
+  },
+  { timestamps: true }
+);
+
+const lessonSchema: Schema = new Schema<ILessonModel>(
+  {
+    lessonTitle: {
       type: String,
       trim: true,
       minlength: 3,
@@ -14,13 +80,7 @@ const lessonSchema = new Schema<ILessonModel>(
       type: String,
       lowercase: true,
     },
-    content: {
-      type: {},
-      minlength: 200,
-    },
-    lecture_quiz: {},
-    lecture_notes: {},
-    lecture_video: {},
+    quiz: [quizSchema],
     free_preview: {
       type: Boolean,
       default: false,
@@ -29,7 +89,7 @@ const lessonSchema = new Schema<ILessonModel>(
   { timestamps: true }
 );
 
-const courseSchema = new Schema<ICourseModel>(
+const courseSchema: Schema = new Schema<ICourseModel>(
   {
     name: {
       type: String,

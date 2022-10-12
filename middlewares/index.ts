@@ -1,6 +1,7 @@
 import { expressjwt } from "express-jwt";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import User from "../models/user";
+import Course from "../models/course";
 
 export const requireSignin = expressjwt({
   //@ts-ignore
@@ -9,7 +10,11 @@ export const requireSignin = expressjwt({
   algorithms: ["HS256"],
 });
 
-export const isInstructor = async (req: any, res: Response, next: any) => {
+export const isInstructor = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+): Promise<unknown> => {
   try {
     const user = await User.findById(req.auth._id).exec();
     //@ts-ignore
