@@ -24,8 +24,11 @@ import {
   userCourses,
   createQuiz,
   getQuiz,
+  allQuiz,
 } from "../controllers/course";
 
+router.get("/courses", courses);
+router.get("/quizzes", allQuiz);
 // image
 router.post("/course/upload-image", uploadImage);
 router.post("/course/remove-image", removeImage);
@@ -35,13 +38,6 @@ router.put("/course/:slug", requireSignin, update);
 router.get("/course/:slug", read);
 // quiz
 router.get("./course/lessons/quiz/:quizId", getQuiz);
-// router.post(
-//   "/course/quiz-upload/:instructorId",
-//   requireSignin,
-//   formidable(),
-//   createQuiz
-// );
-// router.post("/course/video-remove/:instructorId", requireSignin, removeQuiz);
 
 // publish unpublish
 router.put("/course/publish/:courseId", requireSignin, publishCourse);

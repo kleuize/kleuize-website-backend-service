@@ -332,6 +332,13 @@ export const courses = async (req: Request, res: Response) => {
   res.json(all);
 };
 
+export const allQuiz = async(req: Request, res: Response) => {
+  const allquiz = await Course.find({ published: false || true})
+  .populate("lessons", "quiz")
+  .exec();
+  res.json(allquiz)
+}
+
 export const checkEnrollment = async (req: any, res: Response) => {
   const { courseId } = req.params;
   // find courses of the currently logged in user
