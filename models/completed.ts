@@ -1,6 +1,12 @@
 import { Schema, model, Types } from "mongoose";
 
-const completedSchema = new Schema(
+type CompletedDocument = {
+  user: any,
+  course: any;
+  lessons: any[],
+}
+
+const completedSchema: Schema = new Schema<CompletedDocument>(
   {
     user: {
       type: Types.ObjectId,
@@ -15,4 +21,4 @@ const completedSchema = new Schema(
   { timestamps: true }
 );
 
-export default model("Completed", completedSchema);
+export default model<CompletedDocument>("Completed", completedSchema);

@@ -4,7 +4,7 @@ import formidable from "express-formidable";
 const router = express.Router();
 
 // middleware
-import { isInstructor, requireSignin } from "../middlewares";
+import { isInstructor, requireSignin, isEnrolled } from "../middlewares";
 
 // controllers
 import {
@@ -25,6 +25,11 @@ import {
   createQuiz,
   getQuiz,
   allQuiz,
+  paidEnrollment,
+  stripeSuccess,
+  markCompleted,
+  listCompleted,
+  markIncomplete
 } from "../controllers/course";
 
 router.get("/courses", courses);
@@ -58,7 +63,14 @@ router.get("/check-enrollment/:courseId", requireSignin, checkEnrollment);
 
 // enrollment
 router.post("/free-enrollment/:courseId", requireSignin, freeEnrollment);
+router.post("/paid-enrollment/:courseId", requireSignin, paidEnrollment);
+router.get("/stripe-success/:courseId", requireSignin, stripeSuccess);
 
 router.get("/user-courses", requireSignin, userCourses);
+router.get("/user/course/:slug", requireSignin, isEnrolled, read);
 
+// mark completed
+router.post("/mark-completed", requireSignin, markCompleted);
+router.post("/list-completed", requireSignin, listCompleted);
+router.post("/mark-incomplete", requireSignin, markIncomplete);
 module.exports = router;

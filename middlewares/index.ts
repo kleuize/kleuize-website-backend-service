@@ -27,3 +27,30 @@ export const isInstructor = async (
     console.log(err);
   }
 };
+
+export const isEnrolled = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user: any = await User.findById(req.auth._id).exec();
+    const course: any = await Course.findOne({ slug: req.params.slug }).exec();
+
+    // check if course id is found in user courses array
+    let ids = [];
+    //ts-ignore
+    for (let i = 0; i < user.courses.length; i++) {
+      //@ts-ignore
+      ids.push(user.courses[i].toString());
+    }
+    //@ts-ignore
+    if (!ids.includes(course._id.toString())) {
+      res.sendStatus(403);
+    } else {
+      next();
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
