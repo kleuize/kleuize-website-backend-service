@@ -68,6 +68,7 @@ router.get("/stripe-success/:courseId", requireSignin, stripeSuccess);
 
 router.get("/user-courses", requireSignin, userCourses);
 router.get("/user/course/:slug", requireSignin, isEnrolled, read);
+router.get("/user/lessons/:slug", requireSignin, isEnrolled, getQuiz);
 
 // mark completed
 router.post("/mark-completed", requireSignin, markCompleted);

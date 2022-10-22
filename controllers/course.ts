@@ -117,21 +117,14 @@ export const read = async (req: Request, res: Response) => {
 
 export const getQuiz = async (req: Request, res: Response) => {
   try {
-    console.log("data", req.params);
-    const { quizId } = req.params;
-
-    const singleQuiz = await Course.find({
-      lessons: { "quiz._id": quizId },
-    })
-      .select("_id")
-      .exec();
-    res.json(singleQuiz);
-    console.log(singleQuiz);
-  } catch (err) {
-    console.log(err);
-  }
+    const course = await Course.findOne({ slug: req.params.slug })
+    .populate("lessons", "quiz")
+    .exec();
+  res.json(course);
+} catch (err) {
+  console.log(err);
+}
 };
-
 export const addLesson = async (req: any, res: Response) => {
   try {
     const { slug, instructorId } = req.params;
@@ -354,6 +347,7 @@ export const checkEnrollment = async (req: any, res: Response) => {
     course: await Course.findById(courseId).exec(),
   });
 };
+
 
 export const freeEnrollment = async (req: any, res: Response) => {
   try {
