@@ -1,5 +1,6 @@
 import express from "express";
 import formidable from "express-formidable";
+import { check, checkSchema } from "express-validator";
 
 const router = express.Router();
 
@@ -29,8 +30,10 @@ import {
   stripeSuccess,
   markCompleted,
   listCompleted,
-  markIncomplete
+  markIncomplete,
 } from "../controllers/course";
+
+import { getQuizResult } from "../controllers/quiz";
 
 router.get("/courses", courses);
 router.get("/quizzes", allQuiz);
@@ -58,7 +61,7 @@ router.post(
   requireSignin,
   createQuiz
 );
-router.get("/course/lesson/:slug/:quizId", getQuiz)
+router.get("/course/lesson/:slug/:quizId", getQuiz);
 router.get("/check-enrollment/:courseId", requireSignin, checkEnrollment);
 
 // enrollment
@@ -74,4 +77,13 @@ router.get("/user/lessons/:slug", requireSignin, isEnrolled, getQuiz);
 router.post("/mark-completed", requireSignin, markCompleted);
 router.post("/list-completed", requireSignin, listCompleted);
 router.post("/mark-incomplete", requireSignin, markIncomplete);
+
+//getQuizResult
+router.post(
+  "/user/course/:slug/:quizId",
+  requireSignin,
+  isEnrolled,
+  // check("selectedAnswers", "Selected answers must be an array").isArray(),
+  getQuizResult
+);
 module.exports = router;
