@@ -5,8 +5,10 @@ import slugify from "slugify";
 import { nanoid } from "nanoid";
 import { readFileSync } from "fs";
 import User from "../models/user";
+import Completed from "../models/completed";
 import stripe from "stripe";
 import { validationResult } from "express-validator";
+import { QuestionDocument, AnswerDocument } from "../types"
 
 const config: any = {};
 const stripes = new stripe.Stripe(process.env.STRIPE_SECRET, config);
@@ -116,21 +118,14 @@ export const read = async (req: Request, res: Response) => {
 
 export const getQuiz = async (req: Request, res: Response) => {
   try {
-    console.log("data", req.params);
-    const {quizId} = req.params;
-
-    const singleQuiz = await Course.find({
-      lessons: { "quiz._id": quizId },
-    })
-      .select("_id")
+    const course = await Course.findOne({ slug: req.params.slug })
+      .populate("lessons", "quiz")
       .exec();
-    res.json(singleQuiz);
-    console.log(singleQuiz);
+    res.json(course);
   } catch (err) {
     console.log(err);
   }
 };
-
 export const addLesson = async (req: any, res: Response) => {
   try {
     const { slug, instructorId } = req.params;
@@ -222,7 +217,6 @@ export const createQuiz = async (req: any, res: Response) => {
 export const update = async (req: any, res: Response) => {
   try {
     const { slug } = req.params;
-    console.log(slug);
     const course = await Course.findOne({ slug }).exec();
     // console.log("COURSE FOUND => ", course);
     if (req.auth._id != course.instructor._id) {
@@ -332,12 +326,12 @@ export const courses = async (req: Request, res: Response) => {
   res.json(all);
 };
 
-export const allQuiz = async(req: Request, res: Response) => {
-  const allquiz = await Course.find({ published: false || true})
-  .populate("lessons", "quiz")
-  .exec();
-  res.json(allquiz)
-}
+export const allQuiz = async (req: Request, res: Response) => {
+  const allquiz = await Course.find({ published: false || true })
+    .populate("lessons", "quiz")
+    .exec();
+  res.json(allquiz);
+};
 
 export const checkEnrollment = async (req: any, res: Response) => {
   const { courseId } = req.params;
@@ -379,76 +373,85 @@ export const freeEnrollment = async (req: any, res: Response) => {
   }
 };
 
-// export const paidEnrollment = async (req: any, res: Response) => {
-//   try {
-//     // check if course is free or paid
-//     const course = await Course.findById(req.params.courseId)
-//       .populate("instructor")
-//       .exec();
-//     if (!course.paid) return;
-//     // application fee 30%
-//     const fee = (course.price * 30) / 100;
-//     // create stripe session
-//     const session = await stripes.checkout.sessions.create({
-//       payment_method_types: ["card"],
-//       // purchase details
-//       line_items: [
-//         {
-//           name: course.name,
-//           amount: Math.round(course.price.toFixed(2) * 100),
-//           currency: "usd",
-//           quantity: 1,
-//         },
-//       ],
-//       // charge buyer and transfer remaining balance to seller (after fee)
-//       payment_intent_data: {
-//         application_fee_amount: Math.round(fee.toFixed(2) * 100),
-//         transfer_data: {
-//           destination: course.instructor.stripe_account_id,
-//         },
-//       },
-//       // redirect url after successful payment
-//       success_url: `${process.env.STRIPE_SUCCESS_URL}/${course._id}`,
-//       cancel_url: process.env.STRIPE_CANCEL_URL,
-//     });
-//     console.log("SESSION ID => ", session);
+export const paidEnrollment = async (req: any, res: Response) => {
+  try {
+    // check if course is free or paid
+    const course = await Course.findById(req.params.courseId)
+      .populate("instructor")
+      .exec();
+    if (!course.paid) return;
+    // application fee 30%
+    const fee = (course.price * 38) / 100;
+    // create stripe session
+    const session = await stripes.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+      // purchase details
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: { name: course.name },
+            // currency: "usd",
+            //@ts-ignore
+            unit_amount: Math.round(course.price.toFixed(2) * 100),
+          },
+          quantity: 1,
+        },
+      ],
+      // charge buyer and transfer remaining balance to seller (after fee)
+      payment_intent_data: {
+        //@ts-ignore
+        application_fee_amount: Math.round(fee.toFixed(2) * 100),
+        transfer_data: {
+          //@ts-ignore
+          destination: course.instructor.stripe_account_id,
+        },
+      },
+      // redirect url after successful payment
+      success_url: `${process.env.STRIPE_SUCCESS_URL}/${course._id}`,
+      cancel_url: process.env.STRIPE_CANCEL_URL,
+    });
+    console.log("SESSION ID => ", session);
 
-//     await User.findByIdAndUpdate(req.auth._id, {
-//       stripeSession: session,
-//     }).exec();
-//     res.send(session.id);
-//   } catch (err) {
-//     console.log("PAID ENROLLMENT ERR", err);
-//     return res.status(400).send("Enrollment create failed");
-//   }
-// };
+    await User.findByIdAndUpdate(req.auth._id, {
+      stripeSession: session,
+    }).exec();
+    res.send(session.id);
+  } catch (err) {
+    console.log("PAID ENROLLMENT ERR", err);
+    return res.status(400).send("Enrollment create failed");
+  }
+};
 
-// export const stripeSuccess = async (req: any, res: Response) => {
-//   try {
-//     // find course
-//     const course = await Course.findById(req.params.courseId).exec();
-//     // get user from db to get stripe session id
-//     const user = await User.findById(req.auth._id).exec();
-//     // if no stripe session return
-//     if (!user.stripeSession.id) return res.sendStatus(400);
-//     // retrieve stripe session
-//     const session = await stripes.checkout.sessions.retrieve(
-//       user.stripeSession.id
-//     );
-//     console.log("STRIPE SUCCESS", session);
-//     // if session payment status is paid, push course to user's course []
-//     if (session.payment_status === "paid") {
-//       await User.findByIdAndUpdate(user._id, {
-//         $addToSet: { courses: course._id },
-//         $set: { stripeSession: {} },
-//       }).exec();
-//     }
-//     res.json({ success: true, course });
-//   } catch (err) {
-//     console.log("STRIPE SUCCESS ERR", err);
-//     res.json({ success: false });
-//   }
-// };
+export const stripeSuccess = async (req: any, res: Response) => {
+  try {
+    // find course
+    const course = await Course.findById(req.params.courseId).exec();
+    // get user from db to get stripe session id
+    const user = await User.findById(req.auth._id).exec();
+    // if no stripe session return
+    //@ts-ignore
+    if (!user.stripeSession.id) return res.sendStatus(400);
+    // retrieve stripe session
+    const session = await stripes.checkout.sessions.retrieve(
+      //@ts-ignore
+      user.stripeSession.id
+    );
+    console.log("STRIPE SUCCESS", session);
+    // if session payment status is paid, push course to user's course []
+    if (session.payment_status === "paid") {
+      await User.findByIdAndUpdate(user._id, {
+        $addToSet: { courses: course._id },
+        $set: { stripeSession: {} },
+      }).exec();
+    }
+    res.json({ success: true, course });
+  } catch (err) {
+    console.log("STRIPE SUCCESS ERR", err);
+    res.json({ success: false });
+  }
+};
 
 export const userCourses = async (req: any, res: Response) => {
   const user = await User.findById(req.auth._id).exec();
@@ -457,6 +460,70 @@ export const userCourses = async (req: any, res: Response) => {
     .exec();
   res.json(courses);
 };
+
+export const markCompleted = async (req: any, res: Response) => {
+  const { courseId, lessonId } = req.body;
+  // console.log(courseId, lessonId);
+  // find if user with that course is already created
+  const existing = await Completed.findOne({
+    user: req.auth._id,
+    course: courseId,
+  }).exec();
+
+  if (existing) {
+    // update
+    const updated = await Completed.findOneAndUpdate(
+      {
+        user: req.user._id,
+        course: courseId,
+      },
+      {
+        $addToSet: { lessons: lessonId },
+      }
+    ).exec();
+    res.json({ ok: true });
+  } else {
+    // create
+    const created = await new Completed({
+      user: req.user._id,
+      course: courseId,
+      lessons: lessonId,
+    }).save();
+    res.json({ ok: true });
+  }
+};
+
+export const listCompleted = async (req: any, res: Response) => {
+  try {
+    const list = await Completed.findOne({
+      user: req.auth._id,
+      course: req.body.courseId,
+    }).exec();
+    list && res.json(list.lessons);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const markIncomplete = async (req: any, res: Response) => {
+  try {
+    const { courseId, lessonId } = req.body;
+
+    const updated = await Completed.findOneAndUpdate(
+      {
+        user: req.auth._id,
+        course: courseId,
+      },
+      {
+        $pull: { lessons: lessonId },
+      }
+    ).exec();
+    res.json({ ok: true });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 function asyncHandler(
   arg0: (
     req: Request,
@@ -465,3 +532,45 @@ function asyncHandler(
 ) {
   throw new Error("Function not implemented.");
 }
+
+export const getQuizResult = async (req: Request, res: Response) => {
+  const { selectedAnswers, quizId} = req.body;
+  const { slug } = req.params;
+  
+  try {
+    const course = await Course.findOne({ slug }).exec();
+    const Alllesson = course.lessons;
+    //@ts-ignore
+    const singleQuiz = Alllesson.forEach((element: any) =>
+      element.quiz
+        .filter((id: any) => id._id === quizId)
+        .map((singleQuizItem: any) => singleQuizItem)
+    );
+
+    const { questions } = singleQuiz;
+
+    let correctAnswersCount = 0;
+
+    questions.forEach((question: QuestionDocument, questionIndex: number) => {
+      // We check if the selected answer equals one of the answers, if yes, we increment the correctAnswers count
+      const { answers } = question;
+      for (let index = 0; index < answers.length; index++) {
+        const answer: AnswerDocument = answers[index];
+        const isSelected = selectedAnswers[questionIndex] === answer.id;
+
+        if (isSelected) {
+          // If the selected answer is correct, we increase the count
+          if (answer.isCorrect) {
+            correctAnswersCount++;
+          }
+
+          break;
+        }
+      }
+    });
+    const score = Math.round((100 * correctAnswersCount) / questions.length);
+    res.json(score);
+  } catch (err) {
+    console.log(err);
+  }
+};
