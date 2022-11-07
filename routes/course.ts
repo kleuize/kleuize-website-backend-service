@@ -80,10 +80,10 @@ router.post("/mark-incomplete", requireSignin, markIncomplete);
 
 //getQuizResult
 router.post(
-  "/user/course/:slug/:quizId",
+  "/user/course/result/:quizId",
   requireSignin,
   isEnrolled,
-  // check("selectedAnswers", "Selected answers must be an array").isArray(),
+  check("selectedAnswers", "Selected answers must be an array").isArray(),
   getQuizResult
 );
 module.exports = router;

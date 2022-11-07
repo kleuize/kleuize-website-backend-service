@@ -11,12 +11,17 @@ import { validationResult } from "express-validator";
 import { QuestionDocument, AnswerDocument } from "../types"
 
 
-export const getQuizResult = async (req: Request, res: Response) => {
+export const getQuizResult = async (req: Request, res: Response)=> {
     const { selectedAnswers} = req.body;
     const { slug, quizId } = req.params;
     
     try {
-      const course = await Course.findOne({ slug }).exec();
+      const course = await Course.findOne({ slug }).populate({
+        path: "questions",
+        populate: {
+          path: "answers",
+        },
+      });
       const Alllesson = course.lessons;
       //@ts-ignore
       const singleQuiz = Alllesson.forEach((element: any) =>
@@ -52,7 +57,7 @@ export const getQuizResult = async (req: Request, res: Response) => {
       const score = Math.round((100 * correctAnswersCount) / questions.length);
       res.json(score);
     } catch (err) {
-      console.log(err);
+      console.log("err", err);
     }
   };
   
