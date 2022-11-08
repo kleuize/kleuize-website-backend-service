@@ -20,7 +20,7 @@ export const markCompleted = async (req: any, res: Response) => {
         $addToSet: { quiz: { score, quizId } },
       }
     ).exec();
-    res.json({ ok: true });
+    res.json({ score });
   } else {
     // create
     const created = await new Completed({
@@ -28,7 +28,7 @@ export const markCompleted = async (req: any, res: Response) => {
       course: courseId,
       quiz: { score, quizId },
     }).save();
-    res.json({ ok: true });
+    res.json({ score });
   }
 };
 
