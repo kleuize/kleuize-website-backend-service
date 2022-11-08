@@ -6,16 +6,15 @@ type CompletedDocument = {
   quiz: any;
 };
 
-type LessonDocument = {
-  quiz: any;
-  id: any;
-  quizTitle: string,
+type quizDocument = {
+  score: number;
+  quizId: string;
 };
 
-const lessonSchema: Schema = new Schema<LessonDocument>(
+const quizSchema: Schema = new Schema<quizDocument>(
   {
-    quizTitle: { type: String },
-    quiz: [],
+    score: { type: Number },
+    quizId: { type: String },
   },
   { timestamps: true }
 );
@@ -30,7 +29,7 @@ const completedSchema: Schema = new Schema<CompletedDocument>(
       type: Types.ObjectId,
       ref: "Course",
     },
-    quiz: []
+    quiz: [quizSchema],
   },
   { timestamps: true }
 );

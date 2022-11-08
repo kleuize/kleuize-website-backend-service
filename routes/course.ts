@@ -30,8 +30,6 @@ import {
   stripeSuccess,
 } from "../controllers/course";
 
-import { getQuizResult } from "../controllers/quiz";
-
 router.get("/courses", courses);
 router.get("/quizzes", allQuiz);
 // image
@@ -70,12 +68,4 @@ router.get("/user-courses", requireSignin, userCourses);
 router.get("/user/course/:slug", requireSignin, isEnrolled, read);
 router.get("/user/lessons/:slug", requireSignin, isEnrolled, getQuiz);
 
-//getQuizResult
-router.post(
-  "/user/course/result/:quizId",
-  requireSignin,
-  isEnrolled,
-  check("selectedAnswers", "Selected answers must be an array").isArray(),
-  getQuizResult
-);
 module.exports = router;
