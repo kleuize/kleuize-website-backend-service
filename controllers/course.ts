@@ -461,69 +461,6 @@ export const userCourses = async (req: any, res: Response) => {
   res.json(courses);
 };
 
-export const markCompleted = async (req: any, res: Response) => {
-  const { courseId, lessonId } = req.body;
-  // console.log(courseId, lessonId);
-  // find if user with that course is already created
-  const existing = await Completed.findOne({
-    user: req.auth._id,
-    course: courseId,
-  }).exec();
-
-  if (existing) {
-    // update
-    const updated = await Completed.findOneAndUpdate(
-      {
-        user: req.user._id,
-        course: courseId,
-      },
-      {
-        $addToSet: { lessons: lessonId },
-      }
-    ).exec();
-    res.json({ ok: true });
-  } else {
-    // create
-    const created = await new Completed({
-      user: req.user._id,
-      course: courseId,
-      lessons: lessonId,
-    }).save();
-    res.json({ ok: true });
-  }
-};
-
-export const listCompleted = async (req: any, res: Response) => {
-  try {
-    const list = await Completed.findOne({
-      user: req.auth._id,
-      course: req.body.courseId,
-    }).exec();
-    list && res.json(list.lessons);
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-export const markIncomplete = async (req: any, res: Response) => {
-  try {
-    const { courseId, lessonId } = req.body;
-
-    const updated = await Completed.findOneAndUpdate(
-      {
-        user: req.auth._id,
-        course: courseId,
-      },
-      {
-        $pull: { lessons: lessonId },
-      }
-    ).exec();
-    res.json({ ok: true });
-  } catch (err) {
-    console.log(err);
-  }
-};
-
 function asyncHandler(
   arg0: (
     req: Request,
@@ -547,8 +484,10 @@ export const getQuizResult = async (req: Request, res: Response) => {
         .map((singleQuizItem: any) => singleQuizItem)
     );
 
+    console.log("SingleQuiz", singleQuiz)
     const { questions } = singleQuiz;
 
+    console.log("questions", questions)
     let correctAnswersCount = 0;
 
     questions.forEach((question: QuestionDocument, questionIndex: number) => {
@@ -558,6 +497,7 @@ export const getQuizResult = async (req: Request, res: Response) => {
         const answer: AnswerDocument = answers[index];
         const isSelected = selectedAnswers[questionIndex] === answer.id;
 
+        console.log("isSelected", isSelected)
         if (isSelected) {
           // If the selected answer is correct, we increase the count
           if (answer.isCorrect) {
@@ -569,6 +509,7 @@ export const getQuizResult = async (req: Request, res: Response) => {
       }
     });
     const score = Math.round((100 * correctAnswersCount) / questions.length);
+    console.log(score)
     res.json(score);
   } catch (err) {
     console.log(err);
