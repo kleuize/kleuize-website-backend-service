@@ -2,8 +2,7 @@ import { Request, Response } from "express";
 import Completed from "../models/completed";
 
 export const markCompleted = async (req: any, res: Response) => {
-  const { courseId, quizId } = req.body;
-  // console.log(courseId, lessonId);
+  const { courseId, quizId, score } = req.body;
   // find if user with that course is already created
   const existing = await Completed.findOne({
     user: req.auth._id,
@@ -18,7 +17,7 @@ export const markCompleted = async (req: any, res: Response) => {
         course: courseId,
       },
       {
-        $addToSet: { quiz: quizId },
+        $addToSet: { quiz: { score, quizId } },
       }
     ).exec();
     res.json({ ok: true });
@@ -27,7 +26,7 @@ export const markCompleted = async (req: any, res: Response) => {
     const created = await new Completed({
       user: req.auth._id,
       course: courseId,
-      quiz: quizId,
+      quiz: { score, quizId },
     }).save();
     res.json({ ok: true });
   }
