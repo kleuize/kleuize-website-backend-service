@@ -1,16 +1,52 @@
 import { Types, Document } from "mongoose";
-export interface IUserModel {
-  name?: string;
-  email?: string;
-  password?: string;
+
+export interface IUserDocument {
+  /**
+   * user name
+   */
+  name: string;
+   /**
+   * user surName
+   */
+  surName: string;
+  /**
+   * user e-mail
+   */
+  email: string;
+  /**
+   * user password
+   */
+  password: string;
+  /**
+   * user TCKN
+   */
+  identityNumber?: string;
+   /**
+   * user city
+   */
+  city?: string;
+  country?: string;
+  ip?: string;
+  registrationAddress?: string;
+  contactName?: string;
+  address?: string;
+  itemType?: string;
+  productName?: string;
+  category1?: string;
+  price?: number;
   role?: string[];
   picture?: string;
+  phoneNumber?: string;
   courses?: any;
+  passwordResetCode?: string;
+  cardUserKey?: string;
+  identifyNumber: string;
+  // you should after delete
   stripe_account_id?: string;
   stripe_seller?: {};
   stripeSession?: {};
-  passwordResetCode?: string;
 }
+
 export interface ILessonModel {
   lessonTitle: string;
   slug?: string;

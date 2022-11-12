@@ -27,7 +27,7 @@ export const register = async (req: Request, res: Response) => {
   //now we use the functions of the model to has the password then we'll save and divert back to register route
   try {
     console.log(req.body);
-    const { name, email, password } = req.body;
+    const { name, surName, email, password } = req.body;
     //do validation now
     if (!name) return res.status(400).send("name is required.");
     if (!password || password.length < 6) {
@@ -46,6 +46,7 @@ export const register = async (req: Request, res: Response) => {
     //register
     const user = await new User({
       name,
+      surName,
       email,
       password: hashedPassword,
     }).save();
