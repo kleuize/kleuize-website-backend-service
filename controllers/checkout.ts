@@ -4,16 +4,28 @@ import * as Checkout from "../services/iyzipay/methods/currentPaymentMethod/chec
 //@ts-ignore
 import Iyzipay from "iyzipay";
 import { nanoid } from "nanoid";
+import { CompletePayment } from "../utils/completePayments";
+
+export const chechoutController = async (req: Request, res: Response) => {
+  let result = await Checkout.getFormPayment({
+    locale: "tr",
+    converSationId: nanoid(),
+    token: req.body.token,
+  });
+  await CompletePayment(result);
+  res.json(result);
+};
 
 export const chechoutInitialize = async (req: Request, res: Response) => {
   const { price } = req.body;
   const paidPrice = price * 1.2;
-  let result = await Checkout.initializeCheckoutPayment({
+
+  const data = {
     locale: "tr",
-    price: price,
-    paidPrice: paidPrice,
+    price: 21,
+    paidPrice: 22,
     currency: "TRY",
-    callbackUrl: "https://localhost/api/checkout/complete/payment",
+    callbackUrl: "https://localhost:5000/api/checkout/complete/payment",
     enabledInstallments: [1],
     buyer: {
       id: "BY789",
@@ -50,23 +62,18 @@ export const chechoutInitialize = async (req: Request, res: Response) => {
         price: "21",
       },
     ],
-  });
-  res.json(result);
-  const html = `<!DOCTYPE html>
-  <html>
-  <head>
-  <title>Ödeme Yap</title>
-  <meta charset="UTF-8" />
-  ${result?.checkoutFormContent}
-  </head>
-  </html>`;
-};
+  };
 
-export const chechoutController = async (req: Request, res: Response) => {
-  let result = await Checkout.getFormPayment({
-    locale: "tr",
-    converSationId: nanoid(),
-    token: req.body.token,
-  });
-  res.json(result);
+  let result = await Checkout.initializeCheckoutPayment(data);
+  console.log(result);
+  res.json(result.chechoutFormContent);
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<title>Ödeme Yap</title>
+<meta charset="UTF-8" />
+${result?.checkoutFormContent}
+</head>
+</html>
+`;
 };

@@ -47,7 +47,7 @@ const PaymentSuccessSchema: Schema = new Schema<IPaymentSuccessDocument>(
     },
     conversationId: {
       type: String,
-      required: true,
+      required: false,
     },
     currency: {
       type: String,

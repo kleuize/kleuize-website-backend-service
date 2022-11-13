@@ -14,11 +14,11 @@ const PaymentFailedSchema: Schema = new Schema<IPaymentFailedDocument>(
     status: {
       type: String,
       required: true,
-      enum: ["success"],
+      enum: ["failure"],
     },
     conversationId: {
       type: String,
-      required: true,
+      required: false,
     },
     errorCode: {
       type: String,

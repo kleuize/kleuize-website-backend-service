@@ -5,7 +5,7 @@ import PaymentsSuccess from "../models/paymentSuccess";
 
 const { ObjectId } = Types;
 
-export const CompletePayment = async (result) => {
+export const CompletePayment = async (result: any) => {
   if (result?.status === "success") {
     await Basket.updateOne(
       {
@@ -26,7 +26,7 @@ export const CompletePayment = async (result) => {
       paymentId: result?.paymentId,
       price: result?.price,
       paidPrice: result?.paidPrice,
-      itemTransactions: result?.itemTransactions.map((item) => {
+      itemTransactions: result?.itemTransactions.map((item: any) => {
         return {
           itemId: item?.itemId,
           paymentTransactionId: item?.paymentTransactionId,
