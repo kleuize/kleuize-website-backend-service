@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 //@ts-ignore
-import * as Checkout from "../services/iyzipay/methods/currentPaymentMethod/checkout.js";
+import * as Checkout from "../services/iyzipay/methods/currentPaymentMethod/checkout.ts";
 //@ts-ignore
 import Iyzipay from "iyzipay";
 import { nanoid } from "nanoid";
@@ -66,14 +66,18 @@ export const chechoutInitialize = async (req: Request, res: Response) => {
 
   let result = await Checkout.initializeCheckoutPayment(data);
   console.log(result);
+  //@ts-ignore
   res.json(result.chechoutFormContent);
+  
   const html = `<!DOCTYPE html>
 <html>
 <head>
 <title>Ödeme Yap</title>
 <meta charset="UTF-8" />
-${result?.checkoutFormContent}
+
 </head>
 </html>
 `;
 };
+
+// ${result?.checkoutFormContent}

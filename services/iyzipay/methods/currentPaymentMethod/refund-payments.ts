@@ -1,8 +1,9 @@
 import iyzipay from "../../connections/iyzipay";
 
-export const cancelPayment = async (data) => {
+export const refundPayment = async (data: any) => {
   return new Promise((resolve, reject) => {
-    iyzipay.cancel.create(data, (err, result) => {
+    //@ts-ignore
+    iyzipay.refund.create(data, (err: any, result: any) => {
       if (err) {
         reject(err);
       } else {
