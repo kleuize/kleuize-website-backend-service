@@ -54,17 +54,18 @@ export interface ILessonModel {
   free_preview?: boolean;
 }
 
-export interface ICourseModel {
+export interface ICourseModel extends Document {
+  _id: Types.ObjectId;
   name: string;
   slug?: string;
-  description: {};
+  description?: {};
   category: string;
   price: number;
-  image: {};
+  image?: {};
   published?: boolean;
-  paid: boolean;
-  instructor: Types.ObjectId;
-  lessons: ILessonModel;
+  paid?: boolean;
+  instructor?: Types.ObjectId;
+  lessons?: ILessonModel;
 }
 
 export type AnswerDocument = Document & {
