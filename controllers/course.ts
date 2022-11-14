@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import AWS from "aws-sdk";
 import Course from "../models/course";
-import slugify from "slugify";
+var slugify = require('slugify')
 import { nanoid } from "nanoid";
 import { readFileSync } from "fs";
 import User from "../models/user";
