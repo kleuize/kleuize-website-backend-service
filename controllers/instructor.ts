@@ -3,7 +3,6 @@ import User from "../models/user";
 import Course from "../models/course";
 import queryString from "query-string";
 import stripe from "stripe";
-import { IUserModel } from "../types";
 
 const config: any = {};
 const stripes = new stripe.Stripe(process.env.STRIPE_SECRET, config);
